@@ -1,57 +1,63 @@
 import 'dart:math';
 
 class PasswordManager {
-  
-  bool validatePasswordStrength(String password) {
-    if (password.length < 8) return false;
-    if (!RegExp(r'[A-Z]').hasMatch(password)) return false; 
-    if (!RegExp(r'[a-z]').hasMatch(password)) return false; 
-    if (!RegExp(r'[0-9]').hasMatch(password)) return false; 
-    if (!RegExp(r'[\W_]').hasMatch(password)) return false; 
-    return true;
-  }
+  static final RegExp _lowerCase = RegExp(r'[a-z]');
+  static final RegExp _upperCase = RegExp(r'[A-Z]');
+  static final RegExp _number = RegExp(r'[0-9]');
+  static final RegExp _specialChar = RegExp(r'[^a-zA-Z0-9]');
+  static String validatePasswordStrength(String password) {
+    bool hasLower = _lowerCase.hasMatch(password);
+    bool hasUpper = _upperCase.hasMatch(password);
+    bool hasNumber = _number.hasMatch(password);
+    bool hasSpecial = _specialChar.hasMatch(password);
+    int length = password.length;
 
-  
-  String generatePassword(String level) {
-    switch (level.toLowerCase()) {
-      case 'strong':
-        return _generateRandomPassword(16, true, true, true, true);
-      case 'intermediate':
-        return _generateRandomPassword(12, true, true, true, false);
-      case 'low':
-        return _generateRandomPassword(8, true, true, false, false);
-      default:
-        throw ArgumentError('Invalid level. Choose from "strong", "intermediate", or "low".');
+    if (length >= 8 && hasLower && hasUpper && hasNumber && hasSpecial) {
+      return "Strong";
+    } else if (length >= 6 && hasLower && hasUpper && hasNumber) {
+      return "Intermediate";
+    } else {
+      return "Low";
     }
   }
 
-  
-  String _generateRandomPassword(int length, bool useUppercase, bool useLowercase, bool useNumbers, bool useSpecialChars) {
-    const String uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const String lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+  static String generatePassword({required String level}) {
+    const String lowerCaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+    const String upperCaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const String numbers = '0123456789';
-    const String specialChars = '!@#\$%^&*()-_=+[]{}|;:",.<>?';
+    const String specialChars = '!@#\$%^&*()_+[]{}';
 
     String chars = '';
-    if (useUppercase) chars += uppercaseLetters;
-    if (useLowercase) chars += lowercaseLetters;
-    if (useNumbers) chars += numbers;
-    if (useSpecialChars) chars += specialChars;
+    int length = 8;
 
-    Random random = Random();
-    return List.generate(length, (index) => chars[random.nextInt(chars.length)]).join();
+    switch (level) {
+      case "strong":
+        chars = lowerCaseLetters + upperCaseLetters + numbers + specialChars;
+        length = 12;
+        break;
+      case "intermediate":
+        chars = lowerCaseLetters + upperCaseLetters + numbers;
+        length = 10;
+        break;
+      case "low":
+        chars = lowerCaseLetters;
+        length = 6;
+        break;
+      default:
+        return "Invalid level";
+    }
+
+    return List.generate(
+        length, (index) => chars[Random().nextInt(chars.length)]).join();
   }
 }
 
 void main() {
-  PasswordManager pm = PasswordManager();
+  String password = "Example@123";
+  print(
+      "Password Strength: ${PasswordManager.validatePasswordStrength(password)}");
 
-  
-  print(pm.validatePasswordStrength('A!b2cdef')); 
-  print(pm.validatePasswordStrength('abcdefg'));  
-
-  // Generate passwords
-  print('Strong password: ${pm.generatePassword('strong')}');
-  print('Intermediate password: ${pm.generatePassword('intermediate')}');
-  print('Low password: ${pm.generatePassword('low')}');
+  String generatedStrongPassword =
+      PasswordManager.generatePassword(level: "strong");
+  print("Generated Strong Password: $generatedStrongPassword");
 }
