@@ -1,0 +1,8 @@
+name: lock_and_key
+description: A CLI tool to generate and validate passwords
+version: 1.0.0
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+executables:
+  lock_and_key: bin/lock_and_key.dart
