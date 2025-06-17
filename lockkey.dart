@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 class PasswordManager {
@@ -5,6 +6,7 @@ class PasswordManager {
   static final RegExp _upperCase = RegExp(r'[A-Z]');
   static final RegExp _number = RegExp(r'[0-9]');
   static final RegExp _specialChar = RegExp(r'[^a-zA-Z0-9]');
+
   static String validatePasswordStrength(String password) {
     bool hasLower = _lowerCase.hasMatch(password);
     bool hasUpper = _upperCase.hasMatch(password);
@@ -30,7 +32,7 @@ class PasswordManager {
     String chars = '';
     int length = 8;
 
-    switch (level) {
+    switch (level.toLowerCase()) {
       case "strong":
         chars = lowerCaseLetters + upperCaseLetters + numbers + specialChars;
         length = 12;
@@ -47,17 +49,26 @@ class PasswordManager {
         return "Invalid level";
     }
 
-    return List.generate(
-        length, (index) => chars[Random().nextInt(chars.length)]).join();
+    final rand = Random();
+    return List.generate(length, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 }
 
 void main() {
-  String password = "Example@123";
-  print(
-      "Password Strength: ${PasswordManager.validatePasswordStrength(password)}");
+  print("Enter password strength level (low / intermediate / strong):");
+  String? level = stdin.readLineSync();
 
-  String generatedStrongPassword =
-      PasswordManager.generatePassword(level: "strong");
-  print("Generated Strong Password: $generatedStrongPassword");
+  if (level == null || level.isEmpty) {
+    print("No input received. Exiting...");
+    return;
+  }
+
+  String password = PasswordManager.generatePassword(level: level);
+
+  if (password == "Invalid level") {
+    print("Invalid password strength level entered.");
+  } else {
+    print("Generated $level password: $password");
+    print("Strength check: ${PasswordManager.validatePasswordStrength(password)}");
+  }
 }
